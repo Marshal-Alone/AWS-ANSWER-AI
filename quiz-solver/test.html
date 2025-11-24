@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Test - Multiple Questions</title>
+    <style>
+        body {
+            font-family: 'Amazon Ember Display', 'Amazon Ember', sans-serif;
+            background: #232F3E;
+            color: #232F3E;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .quiz-container {
+            background: white;
+            border-radius: 10px;
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .question-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .question-number {
+            font-size: 16pt;
+            font-weight: 600;
+            color: #232F3E;
+            min-width: 30px;
+        }
+
+        .question-text {
+            font-size: 16pt;
+            color: #232F3E;
+            line-height: 1.6;
+            flex: 1;
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .option {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: white;
+        }
+
+        .option:hover {
+            background: #f9f9f9;
+            border-color: #667eea;
+        }
+
+        .option.selected {
+            background: #e8eaff;
+            border-color: #667eea;
+            border-width: 3px;
+        }
+
+        .option.correct {
+            background: #d4edda;
+            border-color: #2ecc71;
+            border-width: 3px;
+        }
+
+        .option.incorrect {
+            background: #f8d7da;
+            border-color: #e74c3c;
+            border-width: 3px;
+        }
+
+        .option input[type="radio"] {
+            margin-right: 15px;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .option label {
+            font-size: 14pt;
+            color: #232F3E;
+            cursor: pointer;
+            flex: 1;
+            line-height: 1.5;
+        }
+
+        .score-display {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 14pt;
+            font-weight: 600;
+            color: #232F3E;
+        }
+
+        .button-container {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        button {
+            padding: 12px 30px;
+            font-size: 14pt;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .next-btn {
+            background: #2ecc71;
+            color: white;
+        }
+
+        .next-btn:hover {
+            background: #27ae60;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(46, 204, 113, 0.4);
+        }
+
+        .restart-btn {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .restart-btn:hover {
+            background: #c0392b;
+        }
+
+        .feedback {
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .feedback.correct {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .feedback.incorrect {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .completion-screen {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .completion-screen h2 {
+            font-size: 32pt;
+            margin-bottom: 20px;
+            color: #667eea;
+        }
+
+        .final-score {
+            font-size: 48pt;
+            font-weight: bold;
+            color: #2ecc71;
+            margin: 20px 0;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="quiz-container">
+        <div id="quizArea">
+            <div class="score-display">
+                Question <span id="currentQuestion">1</span> of <span id="totalQuestions">5</span> |
+                Score: <span id="score">0</span> out of <span id="attempted">0</span>
+            </div>
+
+            <div class="question-header">
+                <div class="question-number" id="questionNumber">1.</div>
+                <div class="question-text" id="questionText"></div>
+            </div>
+
+            <form id="quizForm" class="options-container">
+                <!-- Options will be inserted here -->
+            </form>
+
+            <div id="feedback" class="feedback hidden"></div>
+
+            <div class="button-container">
+                <button type="button" id="submitBtn" class="submit-btn">Submit Answer</button>
+                <button type="button" id="nextBtn" class="next-btn hidden">Next Question</button>
+            </div>
+        </div>
+
+        <div id="completionScreen" class="completion-screen hidden">
+            <h2>🎉 Quiz Completed!</h2>
+            <div class="final-score" id="finalScore">0/0</div>
+            <p style="font-size: 18pt; color: #666;">Great job!</p>
+            <button class="restart-btn" onclick="location.reload()">Restart Quiz</button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                question: "Which is the best definition of cloud architecture?",
+                options: [
+                    "Designing applications in cloud-based, shared IT infrastructure by using virtual machines and fault-tolerant data stores in the cloud",
+                    "Applying cloud characteristics to a solution that uses cloud services and features to meet technical and business requirements",
+                    "Relocating traditional on-premises data centers to internet-accessible data centers that a vendor manages",
+                    "Combining frontend and backend software and components to create highly available and scalable web services that meet the needs of an organization"
+                ],
+                correct: 1
+            },
+            {
+                question: "Which are main considerations that influence which Availability Zones to use?",
+                options: [
+                    "Security and access control",
+                    "Compliance with laws and regulations",
+                    "Application resiliency during system failures",
+                    "Protection against localized natural disasters",
+                    "Latency reduction for end users"
+                ],
+                correct: [1, 4]
+            },
+            {
+                question: "What are the benefits of using Amazon EC2 instances for computing?",
+                options: [
+                    "Pay only for capacity that you use",
+                    "Provision resources in advance of need",
+                    "Launch servers in minutes",
+                    "No need to manage operating systems",
+                    "Ability to scale capacity up or down as needed"
+                ],
+                correct: [0, 2, 4]
+            },
+            {
+                question: "What is the difference between horizontal scaling and vertical scaling?",
+                options: [
+                    "Horizontal scaling adds more instances; vertical scaling increases instance size",
+                    "Horizontal scaling increases instance size; vertical scaling adds more instances",
+                    "Horizontal scaling is for databases; vertical scaling is for web servers",
+                    "Horizontal scaling is cheaper; vertical scaling is more expensive"
+                ],
+                correct: 0
+            },
+            {
+                question: "What are the key pillers of the AWS Well-Architected Framework?",
+                options: [
+                    "Operational Excellence",
+                    "Security",
+                    "Reliability",
+                    "Performance Efficiency",
+                    "Cost Optimization",
+                    "Sustainability"
+                ],
+                correct: [0, 1, 2, 3, 4, 5]
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let attempted = 0;
+        let selectedAnswers = [];
+
+        function loadQuestion() {
+            const q = questions[currentQuestionIndex];
+            const questionNumber = document.getElementById('questionNumber');
+            const questionText = document.getElementById('questionText');
+            const quizForm = document.getElementById('quizForm');
+            const currentQuestion = document.getElementById('currentQuestion');
+            const totalQuestions = document.getElementById('totalQuestions');
+            const feedback = document.getElementById('feedback');
+
+            // Update header
+            questionNumber.textContent = `${currentQuestionIndex + 1}.`;
+            questionText.textContent = q.question;
+            currentQuestion.textContent = currentQuestionIndex + 1;
+            totalQuestions.textContent = questions.length;
+
+            // Clear previous options
+            quizForm.innerHTML = '';
+            selectedAnswers = [];
+            feedback.classList.add('hidden');
+
+            // Create options
+            const isMultipleChoice = Array.isArray(q.correct);
+            q.options.forEach((option, index) => {
+                const optionDiv = document.createElement('div');
+                optionDiv.className = 'option';
+                optionDiv.onclick = () => selectOption(index, isMultipleChoice);
+
+                const input = document.createElement('input');
+                input.type = isMultipleChoice ? 'checkbox' : 'radio';
+                input.name = 'answer';
+                input.id = `option-${index}`;
+                input.value = index;
+                input.setAttribute('aria-labelledby', `label-${index}`);
+
+                const label = document.createElement('label');
+                label.id = `label-${index}`;
+                label.htmlFor = `option-${index}`;
+                label.textContent = option;
+                label.style.display = 'none'; // Hidden for accessibility
+
+                const displayLabel = document.createElement('label');
+                displayLabel.htmlFor = `option-${index}`;
+                displayLabel.textContent = option;
+                displayLabel.style.cursor = 'pointer';
+
+                optionDiv.appendChild(input);
+                optionDiv.appendChild(displayLabel);
+                optionDiv.appendChild(label); // Hidden label for screen readers
+                quizForm.appendChild(optionDiv);
+            });
+
+            // Reset buttons
+            document.getElementById('submitBtn').classList.remove('hidden');
+            document.getElementById('submitBtn').disabled = false;
+            document.getElementById('nextBtn').classList.add('hidden');
+        }
+
+        function selectOption(index, isMultipleChoice) {
+            const input = document.getElementById(`option-${index}`);
+            const optionDiv = input.parentElement;
+
+            if (isMultipleChoice) {
+                input.checked = !input.checked;
+                optionDiv.classList.toggle('selected');
+
+                if (input.checked) {
+                    selectedAnswers.push(index);
+                } else {
+                    selectedAnswers = selectedAnswers.filter(ans => ans !== index);
+                }
+            } else {
+                // Clear all selections
+                document.querySelectorAll('.option').forEach(opt => opt.classList.remove('selected'));
+                selectedAnswers = [index];
+                input.checked = true;
+                optionDiv.classList.add('selected');
+            }
+        }
+
+        function submitAnswer() {
+            if (selectedAnswers.length === 0) {
+                alert('Please select an answer!');
+                return;
+            }
+
+            const q = questions[currentQuestionIndex];
+            const correctAnswers = Array.isArray(q.correct) ? q.correct : [q.correct];
+            const feedback = document.getElementById('feedback');
+
+            // Check if answer is correct
+            const isCorrect =
+                selectedAnswers.length === correctAnswers.length &&
+                selectedAnswers.every(ans => correctAnswers.includes(ans));
+
+            attempted++;
+            // if (isCorrect) {
+            //     score++;
+            //     feedback.textContent = '✓ Correct!';
+            //     feedback.className = 'feedback correct';
+            // } else {
+            //     feedback.textContent = '✗ Incorrect. The correct answer is highlighted in green.';
+            //     feedback.className = 'feedback incorrect';
+            // }
+            // feedback.classList.remove('hidden');
+
+            // Highlight answers
+            document.querySelectorAll('.option').forEach((opt, index) => {
+                const input = opt.querySelector('input');
+                opt.classList.remove('selected');
+
+                if (correctAnswers.includes(index)) {
+                    opt.classList.add('correct');
+                } else if (selectedAnswers.includes(index) && !isCorrect) {
+                    opt.classList.add('incorrect');
+                }
+
+                // Disable further selection
+                opt.onclick = null;
+                input.disabled = true;
+            });
+
+            // Update score display
+            document.getElementById('score').textContent = score;
+            document.getElementById('attempted').textContent = attempted;
+
+            // Show next button or finish
+            document.getElementById('submitBtn').classList.add('hidden');
+            if (currentQuestionIndex < questions.length - 1) {
+                document.getElementById('nextBtn').classList.remove('hidden');
+            } else {
+                setTimeout(showCompletion, 1500);
+            }
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            loadQuestion();
+        }
+
+        function showCompletion() {
+            document.getElementById('quizArea').classList.add('hidden');
+            document.getElementById('completionScreen').classList.remove('hidden');
+            document.getElementById('finalScore').textContent = `${score}/${questions.length}`;
+        }
+
+        // Event listeners
+        document.getElementById('submitBtn').addEventListener('click', submitAnswer);
+        document.getElementById('nextBtn').addEventListener('click', nextQuestion);
+
+        // Load first question
+        loadQuestion();
+    </script>
+</body>
+
+</html>

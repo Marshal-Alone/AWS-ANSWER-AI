@@ -1,0 +1,35 @@
+{
+  "manifest_version": 3,
+  "name": "Quiz Solver AI",
+  "version": "1.0",
+  "description": "Extracts quiz questions and solves them using Groq AI.",
+  "permissions": [
+    "sidePanel",
+    "activeTab",
+    "scripting",
+    "storage"
+  ],
+  "host_permissions": [
+    "https://api.groq.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "side_panel": {
+    "default_path": "sidebar.html"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "all_frames": true
+    }
+  ],
+  "action": {
+    "default_title": "Open Quiz Solver"
+  }
+}
