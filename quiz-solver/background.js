@@ -1,10 +1,42 @@
 // ============================================
 // CONFIGURATION
 // ============================================
+const GEMINI_API = 'AIzaSyDa1p0tet4GWKH0P8-qFMfojOxmChQ27Ms';
 const CONFIG = {
-    API_KEY: "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",
-    MODEL: "llama-3.3-70b-versatile",
-    API_URL: "https://api.groq.com/openai/v1/chat/completions",
+    PROVIDERS: {
+        GEMINI_25_FLASH: {
+            name: "Google Gemini 2.5 Flash",
+            apiKey: GEMINI_API,
+            model: "gemini-2.5-flash",
+            apiUrl: "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
+            temperature: 0.1,
+            maxTokens: 8192
+        },
+        GEMINI_25_PRO: {
+            name: "Google Gemini 2.5 Pro",
+            apiKey: GEMINI_API,
+            model: "gemini-2.5-pro",
+            apiUrl: "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent",
+            temperature: 0.1,
+            maxTokens: 8192
+        },
+        GEMINI_PRO_LATEST: {
+            name: "Gemini Pro Latest",
+            apiKey: GEMINI_API,
+            model: "gemini-pro-latest",
+            apiUrl: "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-latest:generateContent",
+            temperature: 0.1,
+            maxTokens: 8192
+        },
+        GROQ: {
+            name: "Groq Llama 3.3 70B",
+            apiKey: "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",
+            model: "llama-3.3-70b-versatile",
+            apiUrl: "https://api.groq.com/openai/v1/chat/completions",
+            temperature: 0.1,
+            maxTokens: 500
+        }
+    },
     RATE_LIMIT: {
         maxRequests: 30,
         perMinutes: 1,
@@ -20,7 +52,9 @@ chrome.sidePanel
     .catch((error) => console.error("Side panel setup error:", error));
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    console.log('📩 Background.js received message:', request.action);
     if (request.action === "SOLVE_QUIZ") {
+        console.log('🎯 Starting quiz solve with data:', request.data);
         solveQuiz(request.data, sender.tab?.id);
         return true; // Keep channel open for async response
     }
@@ -165,6 +199,10 @@ Answer:`;
 // MAIN SOLVER FUNCTION
 // ============================================
 async function solveQuiz(data, tabId) {
+    console.log('🚀 solveQuiz function called!');
+    console.log('📝 Question:', data?.question);
+    console.log('📋 Options:', data?.options);
+
     try {
         const { question, options } = data;
 
@@ -175,43 +213,95 @@ async function solveQuiz(data, tabId) {
         // Check rate limit
         checkRateLimit();
 
+        // Get selected provider from storage (default to GEMINI)
+        const settings = await chrome.storage.local.get(['aiProvider']);
+        const providerKey = settings.aiProvider || 'GEMINI';
+        const provider = CONFIG.PROVIDERS[providerKey];
+
         // Update status
-        sendStatus("AI is analyzing the question...");
+        sendStatus(`${provider.name} is analyzing...`);
 
-        // Call Groq API
-        const response = await fetch(CONFIG.API_URL, {
-            method: "POST",
-            headers: {
-                "Authorization": `Bearer ${CONFIG.API_KEY}`,
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                messages: [
-                    {
-                        role: "system",
-                        content: "You are an AWS expert. Provide accurate, concise answers based on AWS documentation and best practices."
-                    },
-                    {
-                        role: "user",
-                        content: buildPrompt(question, options)
+        let rawAnswer;
+
+        if (providerKey === 'GEMINI_25_FLASH' || providerKey === 'GEMINI_25_PRO' || providerKey === 'GEMINI_PRO_LATEST') {
+            // Gemini API call (Flash, Pro, and 2.5 Flash)
+            const response = await fetch(`${provider.apiUrl}?key=${provider.apiKey}`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    contents: [{
+                        parts: [{
+                            text: `You are an AWS expert. Provide accurate, concise answers based on AWS documentation and best practices.\n\n${buildPrompt(question, options)}`
+                        }]
+                    }],
+                    generationConfig: {
+                        temperature: provider.temperature,
+                        maxOutputTokens: provider.maxTokens,
+                        topP: 0.95
                     }
-                ],
-                model: CONFIG.MODEL,
-                temperature: 0.3, // Low for consistent answers
-                max_tokens: 500,
-                top_p: 0.9
-            })
-        });
+                })
+            });
 
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            throw new Error(
-                errorData.error?.message || `API Error: ${response.status} ${response.statusText}`
-            );
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(
+                    errorData.error?.message || `Gemini API Error: ${response.status}`
+                );
+            }
+
+            const result = await response.json();
+            rawAnswer = result.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+
+            // LOG: Gemini API Response
+            console.log('=== GEMINI API RESPONSE ===');
+            console.log('Full Response:', JSON.stringify(result, null, 2));
+            console.log('Raw Answer:', rawAnswer);
+            console.log('===========================');
+
+        } else {
+            // Groq API call (OpenAI-compatible)
+            const response = await fetch(provider.apiUrl, {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${provider.apiKey}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    messages: [
+                        {
+                            role: "system",
+                            content: "You are an AWS expert. Provide accurate, concise answers based on AWS documentation and best practices."
+                        },
+                        {
+                            role: "user",
+                            content: buildPrompt(question, options)
+                        }
+                    ],
+                    model: provider.model,
+                    temperature: provider.temperature,
+                    max_tokens: provider.maxTokens,
+                    top_p: 0.9
+                })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(
+                    errorData.error?.message || `Groq API Error: ${response.status}`
+                );
+            }
+
+            const result = await response.json();
+            rawAnswer = result.choices?.[0]?.message?.content?.trim();
+
+            // LOG: Groq API Response
+            console.log('=== GROQ API RESPONSE ===');
+            console.log('Full Response:', JSON.stringify(result, null, 2));
+            console.log('Raw Answer:', rawAnswer);
+            console.log('=========================');
         }
-
-        const result = await response.json();
-        const rawAnswer = result.choices?.[0]?.message?.content?.trim();
 
         if (!rawAnswer) {
             throw new Error("Empty response from AI model");
@@ -220,6 +310,14 @@ async function solveQuiz(data, tabId) {
         // Find best matching option(s)
         const { answers, confidence } = findBestMatch(rawAnswer, options);
 
+        // LOG: Matching Results
+        console.log('=== ANSWER MATCHING ===');
+        console.log('AI Raw Answer:', rawAnswer);
+        console.log('Matched Answers:', answers);
+        console.log('Confidence:', confidence);
+        console.log('Options Available:', options);
+        console.log('=======================');
+
         // Send result to sidebar
         chrome.runtime.sendMessage({
             action: "SHOW_RESULT",
@@ -227,10 +325,9 @@ async function solveQuiz(data, tabId) {
                 question,
                 options,
                 answer: answers.join(" | "),
-                answers: answers, // Array for multi-select
+                answers: answers,
                 confidence: Math.round(confidence * 100),
-                model: CONFIG.MODEL,
-                usage: result.usage
+                model: provider.name
             }
         });
 

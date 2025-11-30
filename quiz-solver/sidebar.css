@@ -81,6 +81,50 @@ h3 {
     display: flex;
 }
 
+/* AI Provider Selector */
+.provider-selector {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px;
+    background: linear-gradient(135deg, #f0f4ff 0%, #e8f0fe 100%);
+    border-radius: 8px;
+    border: 1.5px solid #667eea;
+    margin-bottom: 8px;
+}
+
+.provider-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85rem;
+    color: #667eea;
+    font-weight: 600;
+}
+
+.provider-select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #333;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.provider-select:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.provider-select:hover {
+    border-color: #667eea;
+}
+
 .interval-label {
     display: flex;
     align-items: center;
@@ -102,41 +146,6 @@ h3 {
 }
 
 .interval-input:focus {
-    outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-}
-
-.module-name-group {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 12px;
-}
-
-.module-label {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 0.85rem;
-    color: #666;
-    font-weight: 500;
-    white-space: nowrap;
-}
-
-.module-input {
-    /* flex: 1; */
-    /* width: max-content; */
-    width: 50%;
-    padding: 8px 12px;
-    border: 1.5px solid #e0e0e0;
-    border-radius: 6px;
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: #333;
-}
-
-.module-input:focus {
     outline: none;
     border-color: #667eea;
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
@@ -326,25 +335,6 @@ button:active {
     color: #155724;
     font-weight: 600;
     font-size: 0.9rem;
-}
-
-.secondary-btn {
-    background: #f8f9fa;
-    color: #667eea;
-    width: 100%;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    font-size: 0.9rem;
-    padding: 12px;
-    border: 2px solid #667eea;
-}
-
-.secondary-btn:hover {
-    background: #667eea;
-    color: white;
 }
 
 .confidence-badge {

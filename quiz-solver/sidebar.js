@@ -11,9 +11,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const autoClickMode = document.getElementById('autoClickMode');
     const confidenceBadge = document.getElementById('confidenceBadge');
     const modelInfo = document.getElementById('modelInfo');
+    const aiProviderSelect = document.getElementById('aiProvider');
 
     // Load saved settings
-    chrome.storage.local.get(['autoMode', 'checkInterval', 'autoClickEnabled'], (result) => {
+    chrome.storage.local.get(['autoMode', 'checkInterval', 'autoClickEnabled', 'aiProvider'], (result) => {
         if (result.autoMode) {
             autoModeToggle.checked = result.autoMode;
             intervalSetting.classList.add('active');
@@ -24,6 +25,18 @@ document.addEventListener('DOMContentLoaded', () => {
         if (result.autoClickEnabled !== undefined) {
             autoClickMode.checked = result.autoClickEnabled;
         }
+        if (result.aiProvider) {
+            aiProviderSelect.value = result.aiProvider;
+        }
+    });
+
+    // Save AI provider selection
+    aiProviderSelect.addEventListener('change', () => {
+        const provider = aiProviderSelect.value;
+        chrome.storage.local.set({ aiProvider: provider });
+        const providerName = aiProviderSelect.options[aiProviderSelect.selectedIndex].text;
+        statusText.textContent = `Switched to ${providerName}`;
+        statusText.style.color = '#667eea';
     });
 
     // Save auto-click preference

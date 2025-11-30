@@ -12,11 +12,29 @@
     <div class="container">
         <div class="header">
             <h1>🧠 Quiz Solver AI</h1>
-            <p class="subtitle">Powered by Groq AI</p>
+            <p class="subtitle">Powered by AI</p>
         </div>
 
         <div class="section controls">
             <div class="control-group">
+                <!-- AI Provider Selector -->
+                <div class="provider-selector">
+                    <label for="aiProvider" class="provider-label">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path
+                                d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                        </svg>
+                        AI Provider
+                    </label>
+                    <select id="aiProvider" class="provider-select">
+                        <option value="GEMINI_25_FLASH">✨ Gemini 2.5 Flash (Latest & Fast)</option>
+                        <option value="GEMINI_25_PRO">💎 Gemini 2.5 Pro (Most Accurate)</option>
+                        <option value="GEMINI_PRO_LATEST">🔮 Gemini Pro Latest</option>
+                        <option value="GROQ">⚡ Groq Llama 3.3 70B</option>
+                    </select>
+                </div>
+
                 <div class="toggle-container">
                     <label class="switch">
                         <input type="checkbox" id="autoMode">
@@ -73,16 +91,6 @@
                 <span id="confidenceBadge" class="confidence-badge"></span>
             </div>
             <div id="aiAnswer" class="content-box answer-box"></div>
-
-            <!-- <div class="result-header">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path
-                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-                </svg>
-                <h3>Options</h3>
-            </div>
-            <ul id="optionsList" class="options-list"></ul> -->
-            <!-- <div id="modelInfo" class="model-info"></div> -->
         </div>
 
         <div class="section status-section">
@@ -94,8 +102,6 @@
             </div>
             <div id="statusText" class="status-message">Ready</div>
         </div>
-
-
     </div>
     <script src="sidebar.js"></script>
 </body>
