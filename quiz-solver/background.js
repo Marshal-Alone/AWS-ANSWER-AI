@@ -195,6 +195,27 @@ Single: "Applying cloud characteristics to a solution"
 Multiple: "Security and access control | Compliance with laws and regulations"
 
 Answer:`;
+    } else if (mode === 'GOOGLE') {
+        // Google Developer quiz mode
+        return `You are an expert in Google technologies and developer certifications. Analyze the question carefully based on Google Cloud Platform, Android, Web, and other Google technologies documentation and best practices.
+
+Question: ${question}
+
+Options:
+${options.map((opt, i) => `${i + 1}. ${opt}`).join("\n")}
+
+Instructions:
+1. Analyze the question carefully based on Google's official documentation and best practices.
+2. If ONLY ONE answer is correct, return ONLY that option's exact text.
+3. If MULTIPLE answers are correct, return them separated by " | " (space-pipe-space).
+4. Return ONLY the option text(s) without numbering, explanations, or extra words.
+5. Match the exact wording from the options provided.
+
+Examples:
+Single: "Use Cloud Functions for serverless execution"
+Multiple: "Enable Cloud CDN | Configure load balancing"
+
+Answer:`;
     } else {
         // General mode for non-AWS quizzes
         return `You are an expert quiz solver. Analyze the question carefully and provide the correct answer(s).
@@ -260,7 +281,9 @@ async function solveQuiz(data, tabId) {
                         parts: [{
                             text: quizMode === 'AWS'
                                 ? `You are an AWS expert. Provide accurate, concise answers based on AWS documentation and best practices.\n\n${buildPrompt(question, options, quizMode)}`
-                                : `You are an expert quiz solver. Provide accurate, concise answers.\n\n${buildPrompt(question, options, quizMode)}`
+                                : quizMode === 'GOOGLE'
+                                    ? `You are a Google technologies expert. Provide accurate, concise answers based on Google's official documentation.\n\n${buildPrompt(question, options, quizMode)}`
+                                    : `You are an expert quiz solver. Provide accurate, concise answers.\n\n${buildPrompt(question, options, quizMode)}`
                         }]
                     }],
                     generationConfig: {
@@ -301,7 +324,9 @@ async function solveQuiz(data, tabId) {
                             role: "system",
                             content: quizMode === 'AWS'
                                 ? "You are an AWS expert. Provide accurate, concise answers based on AWS documentation and best practices."
-                                : "You are an expert quiz solver. Provide accurate, concise answers."
+                                : quizMode === 'GOOGLE'
+                                    ? "You are a Google technologies expert. Provide accurate, concise answers based on Google's official documentation."
+                                    : "You are an expert quiz solver. Provide accurate, concise answers."
                         },
                         {
                             role: "user",

@@ -72,7 +72,14 @@ function extractAndSolve(isAuto = false, retryCount = 0) {
 function extractQuizData() {
     console.log('=== Starting quiz extraction ===');
 
-    // Try quiz card format FIRST (new format with .quiz-item__card--active)
+    // Try Google Quiz format FIRST (MUI-based format)
+    const googleQuizResult = extractFromGoogleQuiz();
+    if (googleQuizResult) {
+        console.log('✓ Extracted using Google Quiz strategy');
+        return googleQuizResult;
+    }
+
+    // Try quiz card format (AWS Academy format with .quiz-item__card--active)
     const quizCardResult = extractFromQuizCard();
     if (quizCardResult) {
         console.log('✓ Extracted using quiz card strategy');
@@ -112,6 +119,75 @@ function extractQuizData() {
     }
 
     console.log('✗ No quiz data extracted');
+    return null;
+}
+
+/**
+ * Extract quiz data from Google Developer quiz format (MUI-based)
+ * Handles the format with .MuiBox-root, .MuiTypography, and .MuiFormControlLabel
+ */
+function extractFromGoogleQuiz() {
+    console.log('=== Trying Google Quiz extraction ===');
+
+    // Use the most stable top-level container class
+    const quizWrapper = document.querySelector('.MuiBox-root.css-rb0ah3');
+
+    if (!quizWrapper) {
+        console.log('Google Quiz wrapper not found');
+        return null;
+    }
+
+    // --- Extract Question Text ---
+    const questionElement = quizWrapper.querySelector('h6.MuiTypography-h6');
+    const questionText = questionElement
+        ? questionElement.textContent.trim()
+        : null;
+
+    if (!questionText) {
+        console.log('Question not found in Google Quiz format');
+        return null;
+    }
+
+    // --- Extract Options (Optimized) ---
+    const options = [];
+    const optionData = [];
+
+    // Find all <label> elements that act as the container for each radio option
+    const optionLabels = quizWrapper.querySelectorAll('.MuiFormControlLabel-root');
+
+    if (optionLabels.length < 2) {
+        console.log('Not enough options found in Google Quiz format');
+        return null;
+    }
+
+    optionLabels.forEach(label => {
+        // Find the input and the text relative to the current label
+        const radioInput = label.querySelector('input[type="radio"]');
+        const optionTextElement = label.querySelector('p.MuiTypography-body1');
+
+        // Ensure both elements exist before pushing
+        if (radioInput && optionTextElement) {
+            const optionText = optionTextElement.textContent.trim();
+            if (optionText) {
+                options.push(optionText);
+                optionData.push({ radio: radioInput, label: label });
+            }
+        }
+    });
+
+    // --- Get Next Button ---
+    // Look for the <button> element with the text "NEXT"
+    const nextButton = Array.from(quizWrapper.querySelectorAll('button')).find(
+        btn => btn.textContent.trim() === 'NEXT'
+    );
+
+    if (questionText && options.length >= 2) {
+        window.__quizOptions = optionData;
+        window.__googleQuizNextButton = nextButton;
+        console.log(`Google Quiz extracted: ${options.length} options, Next button: ${nextButton ? 'Found' : 'Not found'}`);
+        return { question: questionText, options: options };
+    }
+
     return null;
 }
 
@@ -413,6 +489,13 @@ function highlightAnswers(answersArray) {
 }
 
 function autoClickButtons() {
+    // Check for Google Quiz NEXT button first
+    if (window.__googleQuizNextButton && !window.__googleQuizNextButton.disabled) {
+        console.log('Found Google Quiz NEXT button, clicking...');
+        window.__googleQuizNextButton.click();
+        return;
+    }
+
     const submitButton = findButtonByText(['Submit', 'Check Answer', 'OK']);
 
     if (submitButton) {
