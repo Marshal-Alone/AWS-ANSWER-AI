@@ -2,6 +2,7 @@
 // CONFIGURATION
 // ============================================
 const GEMINI_API = 'AIzaSyDa1p0tet4GWKH0P8-qFMfojOxmChQ27Ms';
+const GROQ_API = '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'
 const CONFIG = {
     PROVIDERS: {
         GEMINI_25_FLASH: {
@@ -30,7 +31,7 @@ const CONFIG = {
         },
         GROQ: {
             name: "Groq Llama 3.3 70B",
-            apiKey: "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",
+            apiKey: GROQ_API,
             model: "llama-3.3-70b-versatile",
             apiUrl: "https://api.groq.com/openai/v1/chat/completions",
             temperature: 0.1,
@@ -173,8 +174,9 @@ function levenshteinDistance(str1, str2) {
 // ============================================
 // PROMPT ENGINEERING
 // ============================================
-function buildPrompt(question, options) {
-    return `You are an AWS expert helping solve quiz questions from AWS Academy.Search multiple sources ,compare ans and then give corret ans. The questions will be from aws academy module quiz for AWS Academy Cloud Architecting [145918]
+function buildPrompt(question, options, mode = 'AWS') {
+    if (mode === 'AWS') {
+        return `You are an AWS expert helping solve quiz questions from AWS Academy. Search multiple sources, compare answers and then give correct answer. The questions will be from aws academy module quiz for AWS Academy Cloud Architecting [145918]
 
 Question: ${question}
 
@@ -193,6 +195,28 @@ Single: "Applying cloud characteristics to a solution"
 Multiple: "Security and access control | Compliance with laws and regulations"
 
 Answer:`;
+    } else {
+        // General mode for non-AWS quizzes
+        return `You are an expert quiz solver. Analyze the question carefully and provide the correct answer(s).
+
+Question: ${question}
+
+Options:
+${options.map((opt, i) => `${i + 1}. ${opt}`).join("\n")}
+
+Instructions:
+1. Analyze the question carefully and determine the correct answer(s).
+2. If ONLY ONE answer is correct, return ONLY that option's exact text.
+3. If MULTIPLE answers are correct, return them separated by " | " (space-pipe-space).
+4. Return ONLY the option text(s) without numbering, explanations, or extra words.
+5. Match the exact wording from the options provided.
+
+Examples:
+Single: "payload checksum values"
+Multiple: "session continuity | packet sequencing"
+
+Answer:`;
+    }
 }
 
 // ============================================
@@ -213,9 +237,10 @@ async function solveQuiz(data, tabId) {
         // Check rate limit
         checkRateLimit();
 
-        // Get selected provider from storage (default to GEMINI)
-        const settings = await chrome.storage.local.get(['aiProvider']);
-        const providerKey = settings.aiProvider || 'GEMINI';
+        // Get selected provider and mode from storage
+        const settings = await chrome.storage.local.get(['aiProvider', 'quizMode']);
+        const providerKey = settings.aiProvider || 'GEMINI_25_FLASH';
+        const quizMode = settings.quizMode || 'AWS';
         const provider = CONFIG.PROVIDERS[providerKey];
 
         // Update status
@@ -233,7 +258,9 @@ async function solveQuiz(data, tabId) {
                 body: JSON.stringify({
                     contents: [{
                         parts: [{
-                            text: `You are an AWS expert. Provide accurate, concise answers based on AWS documentation and best practices.\n\n${buildPrompt(question, options)}`
+                            text: quizMode === 'AWS'
+                                ? `You are an AWS expert. Provide accurate, concise answers based on AWS documentation and best practices.\n\n${buildPrompt(question, options, quizMode)}`
+                                : `You are an expert quiz solver. Provide accurate, concise answers.\n\n${buildPrompt(question, options, quizMode)}`
                         }]
                     }],
                     generationConfig: {
@@ -272,11 +299,13 @@ async function solveQuiz(data, tabId) {
                     messages: [
                         {
                             role: "system",
-                            content: "You are an AWS expert. Provide accurate, concise answers based on AWS documentation and best practices."
+                            content: quizMode === 'AWS'
+                                ? "You are an AWS expert. Provide accurate, concise answers based on AWS documentation and best practices."
+                                : "You are an expert quiz solver. Provide accurate, concise answers."
                         },
                         {
                             role: "user",
-                            content: buildPrompt(question, options)
+                            content: buildPrompt(question, options, quizMode)
                         }
                     ],
                     model: provider.model,

@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Card Test - New Format</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .quiz-card__row {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            max-width: 700px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .quiz-card__number-title {
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+
+        .quiz-card__counter {
+            color: #ffcb06;
+            font-weight: bold;
+        }
+
+        .quiz-card__title {
+            margin-bottom: 25px;
+        }
+
+        .fr-view p {
+            font-size: 16px;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .quiz-multiple-choice-option {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            margin: 10px 0;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .quiz-multiple-choice-option:hover {
+            border-color: #ffcb06;
+            background: #fffef8;
+        }
+
+        .quiz-multiple-choice-option__input {
+            margin-right: 12px;
+            width: 18px;
+            height: 18px;
+        }
+
+        .quiz-multiple-choice-option__text {
+            flex: 1;
+        }
+
+        .quiz-card__button {
+            padding: 12px 30px;
+            font-size: 14px;
+            font-weight: bold;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px 5px;
+            transition: all 0.2s;
+        }
+
+        .quiz-card__button:first-of-type {
+            background: #ffcb06;
+            color: #000;
+        }
+
+        .quiz-card__button:first-of-type:hover {
+            background: #e6b800;
+        }
+
+        .quiz-card__button--next {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .quiz-card__button--next:hover {
+            background: #45a049;
+        }
+
+        .quiz-card__actions {
+            margin-top: 25px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .quiz-card__feedback {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .quiz-card__feedback.show {
+            display: block;
+        }
+
+        .quiz-card__feedback.correct {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .quiz-card__feedback.incorrect {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="quiz-card__row">
+        <div class="quiz-card__main">
+            <div class="quiz-card__number">
+                <h1 class="quiz-card__number-title">
+                    <span class="quiz-card__step-label">Question</span>
+                    <span class="quiz-card__counter brand--color brand--ui">01/20</span>
+                </h1>
+            </div>
+
+            <div class="quiz-card__title" id="q-test-question-1">
+                <div class="fr-view rise-tiptap">
+                    <div>
+                        <p>Packet filtering firewalls typically inspect frames for _______________.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="quiz-card__interactive">
+                <div role="radiogroup" aria-labelledby="q-test-question-1" aria-required="true">
+                    <div data-test-id="quiz-card-option">
+                        <label class="quiz-multiple-choice-option">
+                            <input class="quiz-multiple-choice-option__input" type="radio" name="q-test-question-1">
+                            <div class="quiz-multiple-choice-option__text" data-test-id="quiz-mc-option-text">
+                                <div class="quiz-multiple-choice-option__label brand--linkColor">
+                                    <div class="fr-view rise-tiptap">
+                                        <div>
+                                            <p>payload checksum values</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </label>
+                    </div>
+
+                    <div data-test-id="quiz-card-option">
+                        <label class="quiz-multiple-choice-option">
+                            <input class="quiz-multiple-choice-option__input" type="radio" name="q-test-question-1">
+                            <div class="quiz-multiple-choice-option__text" data-test-id="quiz-mc-option-text">
+                                <div class="quiz-multiple-choice-option__label brand--linkColor">
+                                    <div class="fr-view rise-tiptap">
+                                        <div>
+                                            <p>session continuity</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </label>
+                    </div>
+
+                    <div data-test-id="quiz-card-option">
+                        <label class="quiz-multiple-choice-option">
+                            <input class="quiz-multiple-choice-option__input" type="radio" name="q-test-question-1">
+                            <div class="quiz-multiple-choice-option__text" data-test-id="quiz-mc-option-text">
+                                <div class="quiz-multiple-choice-option__label brand--linkColor">
+                                    <div class="fr-view rise-tiptap">
+                                        <div>
+                                            <p>packet sequencing</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </label>
+                    </div>
+
+                    <div data-test-id="quiz-card-option">
+                        <label class="quiz-multiple-choice-option">
+                            <input class="quiz-multiple-choice-option__input" type="radio" name="q-test-question-1">
+                            <div class="quiz-multiple-choice-option__text" data-test-id="quiz-mc-option-text">
+                                <div class="quiz-multiple-choice-option__label brand--linkColor">
+                                    <div class="fr-view rise-tiptap">
+                                        <div>
+                                            <p>source and destination addresses</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="quiz-card__feedback">
+                <div class="quiz-card__feedback-label">Feedback will appear here</div>
+            </div>
+
+            <div class="quiz-card__actions">
+                <div class="quiz-card__submit brand--ui">
+                    <button class="quiz-card__button" type="button" onclick="submitAnswer()">SUBMIT</button>
+                </div>
+                <div class="quiz-card__next brand--ui">
+                    <button class="quiz-card__button quiz-card__button--next" type="button" style="display:none;"
+                        onclick="nextQuestion()">NEXT</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function submitAnswer() {
+            const selected = document.querySelector('input[type="radio"]:checked');
+            if (!selected) {
+                alert('Please select an answer');
+                return;
+            }
+
+            const feedback = document.querySelector('.quiz-card__feedback');
+            feedback.classList.add('show', 'correct');
+            feedback.querySelector('.quiz-card__feedback-label').textContent = 'Answer submitted!';
+
+            document.querySelector('.quiz-card__button:first-of-type').style.display = 'none';
+            document.querySelector('.quiz-card__button--next').style.display = 'inline-block';
+        }
+
+        function nextQuestion() {
+            alert('Moving to next question...');
+        }
+    </script>
+</body>
+
+</html>

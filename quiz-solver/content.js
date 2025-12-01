@@ -72,6 +72,13 @@ function extractAndSolve(isAuto = false, retryCount = 0) {
 function extractQuizData() {
     console.log('=== Starting quiz extraction ===');
 
+    // Try quiz card format FIRST (new format with .quiz-item__card--active)
+    const quizCardResult = extractFromQuizCard();
+    if (quizCardResult) {
+        console.log('✓ Extracted using quiz card strategy');
+        return quizCardResult;
+    }
+
     const allRadios = document.querySelectorAll('input[type="radio"]');
     const allCheckboxes = document.querySelectorAll('input[type="checkbox"]');
     console.log('Total radio buttons found:', allRadios.length);
@@ -105,6 +112,77 @@ function extractQuizData() {
     }
 
     console.log('✗ No quiz data extracted');
+    return null;
+}
+
+function extractFromQuizCard() {
+    console.log('=== Trying quiz card extraction ===');
+
+    // Target only the ACTIVE question card
+    let quizCard = document.querySelector('.quiz-item__card--active .quiz-card__main');
+    if (!quizCard) quizCard = document.querySelector('.quiz-card__main');
+    if (!quizCard) quizCard = document.querySelector('.quiz-card__row');
+    if (!quizCard) return null;
+
+    // Check for content
+    if (!quizCard.querySelector('.quiz-card__title')) return null;
+
+    // Extract Question
+    let question = '';
+    const questionElement = quizCard.querySelector('.quiz-card__title .fr-view p');
+    if (questionElement) {
+        question = questionElement.textContent.trim();
+    } else {
+        const questionContainer = quizCard.querySelector('.quiz-card__title .fr-view');
+        if (questionContainer) {
+            const pTag = questionContainer.querySelector('p');
+            question = pTag ? pTag.textContent.trim() : questionContainer.textContent.trim();
+        }
+    }
+    if (!question) return null;
+
+    // Extract Options - Try Multiple Choice (Radio) first, then Multiple Response (Checkbox)
+    let optionContainers = quizCard.querySelectorAll('div[data-test-id="quiz-card-option"]');
+    let questionType = 'multiple-choice';
+
+    if (optionContainers.length === 0) {
+        optionContainers = quizCard.querySelectorAll('ul li label.quiz-multiple-response-option');
+        questionType = 'multiple-response';
+    }
+
+    if (optionContainers.length < 2) return null;
+
+    const options = [];
+    const optionData = [];
+
+    optionContainers.forEach((container, index) => {
+        let input, optionTextElement;
+
+        if (questionType === 'multiple-choice') {
+            input = container.querySelector('input[type="radio"]');
+            optionTextElement = container.querySelector('.quiz-multiple-choice-option__text .fr-view p') ||
+                container.querySelector('.quiz-multiple-choice-option__text .fr-view') ||
+                container.querySelector('.quiz-multiple-choice-option__text');
+        } else {
+            input = container.querySelector('input[type="checkbox"]');
+            optionTextElement = container.querySelector('.quiz-multiple-response-option__text .fr-view p') ||
+                container.querySelector('.quiz-multiple-response-option__text .fr-view') ||
+                container.querySelector('.quiz-multiple-response-option__text');
+        }
+
+        if (input && optionTextElement) {
+            const optionText = optionTextElement.textContent.trim();
+            if (optionText) {
+                options.push(optionText);
+                optionData.push({ radio: input, label: container });
+            }
+        }
+    });
+
+    if (question && options.length >= 2) {
+        window.__quizOptions = optionData;
+        return { question, options };
+    }
     return null;
 }
 

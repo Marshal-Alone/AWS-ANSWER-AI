@@ -12,9 +12,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const confidenceBadge = document.getElementById('confidenceBadge');
     const modelInfo = document.getElementById('modelInfo');
     const aiProviderSelect = document.getElementById('aiProvider');
+    const quizModeSelect = document.getElementById('quizMode');
 
     // Load saved settings
-    chrome.storage.local.get(['autoMode', 'checkInterval', 'autoClickEnabled', 'aiProvider'], (result) => {
+    chrome.storage.local.get(['autoMode', 'checkInterval', 'autoClickEnabled', 'aiProvider', 'quizMode'], (result) => {
         if (result.autoMode) {
             autoModeToggle.checked = result.autoMode;
             intervalSetting.classList.add('active');
@@ -28,6 +29,18 @@ document.addEventListener('DOMContentLoaded', () => {
         if (result.aiProvider) {
             aiProviderSelect.value = result.aiProvider;
         }
+        if (result.quizMode) {
+            quizModeSelect.value = result.quizMode;
+        }
+    });
+
+    // Save quiz mode selection
+    quizModeSelect.addEventListener('change', () => {
+        const mode = quizModeSelect.value;
+        chrome.storage.local.set({ quizMode: mode });
+        const modeName = quizModeSelect.options[quizModeSelect.selectedIndex].text;
+        statusText.textContent = `Switched to ${modeName}`;
+        statusText.style.color = '#667eea';
     });
 
     // Save AI provider selection
