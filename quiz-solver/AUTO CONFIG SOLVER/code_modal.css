@@ -1,0 +1,192 @@
+/* Modal Overlay - Minimal blur for visibility */
+.code-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.08);
+    /* Very light tint */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999999;
+    backdrop-filter: blur(0px);
+    /* NO BLUR - clear view */
+    animation: fadeIn 0.2s ease;
+    pointer-events: none;
+}
+
+.code-modal-overlay.hidden {
+    display: none;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+/* Modal Container - Compact, movable */
+.code-modal {
+    background: rgba(15, 15, 15, 0.92);
+    /* Dark but slightly transparent */
+    opacity: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    max-width: 650px;
+    width: 80%;
+    max-height: 75vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.7);
+    animation: slideUp 0.3s ease;
+    pointer-events: auto;
+    position: absolute;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(50px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Modal Header - Drag handle */
+.code-modal-header {
+    padding: 14px 18px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: move;
+    user-select: none;
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.code-modal-header h3 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 600;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.code-modal-header h3::before {
+    content: '💻';
+    font-size: 18px;
+}
+
+.code-modal-close {
+    background: none;
+    border: none;
+    color: #999;
+    font-size: 22px;
+    cursor: pointer;
+    padding: 0;
+    width: 26px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.code-modal-close:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+/* Modal Body */
+.code-modal-body {
+    padding: 18px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.code-modal-body pre {
+    margin: 0;
+    background: rgba(10, 10, 10, 0.6);
+    border-radius: 6px;
+    padding: 14px;
+    overflow-x: auto;
+}
+
+.code-modal-body code {
+    font-family: 'Fira Code', 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    color: #e8e8e8;
+}
+
+/* Modal Footer */
+.code-modal-footer {
+    padding: 12px 18px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.code-modal-footer button {
+    padding: 7px 15px;
+    border: none;
+    border-radius: 5px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+}
+
+.code-modal-copy-btn {
+    background: #238636;
+    color: #fff;
+}
+
+.code-modal-copy-btn:hover {
+    background: #2ea043;
+    transform: translateY(-1px);
+}
+
+.code-modal-copy-btn.copied {
+    background: #1f6feb;
+}
+
+.code-modal-insert-btn {
+    background: #1f6feb;
+    color: #fff;
+}
+
+.code-modal-insert-btn:hover {
+    background: #388bfd;
+    transform: translateY(-1px);
+}
+
+/* Language Badge */
+.code-language-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    background: #388bfd;
+    color: #fff;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+}

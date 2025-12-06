@@ -28,7 +28,8 @@
                 "content.js"
             ],
             "css": [
-                "styles.css"
+                "styles.css",
+                "code_modal.css"
             ],
             "all_frames": true
         }

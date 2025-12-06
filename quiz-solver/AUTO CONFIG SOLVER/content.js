@@ -1,4 +1,4 @@
-// ============================================
+﻿// ============================================
 // STATE MANAGEMENT
 // ============================================
 let autoModeInterval = null;
@@ -53,7 +53,7 @@ function stopAutoMode() {
 // SELECTOR VALIDATION
 // ============================================
 function validateSelectors(selectors) {
-    console.log('🔍 Validating selectors:', selectors);
+    console.log('ðŸ” Validating selectors:', selectors);
 
     try {
         // Test question selector
@@ -87,7 +87,7 @@ function validateSelectors(selectors) {
         };
 
     } catch (error) {
-        console.error('❌ Validation error:', error);
+        console.error('âŒ Validation error:', error);
         return {
             success: false,
             questionFound: false,
@@ -143,7 +143,7 @@ async function extractQuizData() {
     const strategy = result[strategyKey];
 
     if (!strategy) {
-        console.error('❌ No strategy found for', hostname);
+        console.error('âŒ No strategy found for', hostname);
         chrome.runtime.sendMessage({
             action: 'ERROR',
             message: `No configuration found. Please click "Initialize Inspector" first.`
@@ -151,28 +151,43 @@ async function extractQuizData() {
         return null;
     }
 
-    console.log('📋 Using strategy:', strategy);
+    console.log('ðŸ“‹ Using strategy:', strategy);
 
     try {
         // Extract question using AI selector
         const questionElement = document.querySelector(strategy.question_selector);
         if (!questionElement) {
-            console.error('❌ Question not found with selector:', strategy.question_selector);
+            console.error('âŒ Question not found with selector:', strategy.question_selector);
             return null;
         }
-        const question = questionElement.innerText.trim();
-        console.log('✓ Question extracted:', question);
+        let question = questionElement.innerText.trim();
+        
+        // Check if incomplete (just "Question 15")
+        const isIncomplete = /^(coding\s+)?question\s*\d+/i.test(question);
+        if (isIncomplete) {
+            console.warn(' Incomplete question, searching parent...');
+            const parentText = questionElement.parentElement?.innerText.trim();
+            if (parentText && parentText.length > question.length) {
+                question = parentText;
+                console.log(' Found full question in parent');
+            }
+        }
+        console.log('âœ“ Question extracted:', question);
 
         // Extract options using AI selector
         const optionElements = document.querySelectorAll(strategy.options_selector);
-        if (!optionElements || optionElements.length < 2) {
-            console.error('❌ Options not found with selector:', strategy.options_selector);
-            console.error('   Found', optionElements?.length || 0, 'elements');
-            return null;
-        }
+        const optionsCount = optionElements?.length || 0;
 
+        console.log(`âœ“ Options found: ${optionsCount}`);
+
+        // Allow 0 options for coding questions
         const options = Array.from(optionElements).map(el => el.innerText.trim());
-        console.log('✓ Options extracted:', options);
+
+        if (optionsCount > 0) {
+            console.log('âœ“ Options extracted:', options);
+        } else {
+            console.log('ðŸ’» No options found - likely a coding question');
+        }
 
         // Store option elements for later clicking
         const optionData = Array.from(optionElements).map(el => {
@@ -182,11 +197,11 @@ async function extractQuizData() {
         });
         window.__quizOptions = optionData;
 
-        console.log('✅ Strategy-based extraction successful!');
+        console.log('âœ… Strategy-based extraction successful!');
         return { question, options };
 
     } catch (error) {
-        console.error('❌ Strategy extraction error:', error);
+        console.error('âŒ Strategy extraction error:', error);
         chrome.runtime.sendMessage({
             action: 'ERROR',
             message: `Extraction failed: ${error.message}`
@@ -201,7 +216,7 @@ async function extractQuizData() {
 function highlightAnswers(answersArray) {
     // Clear previous highlights first
     clearAnswerHighlights();
-    console.log('🤖 AI Answers:', answersArray);
+    console.log('ðŸ¤– AI Answers:', answersArray);
 
     const answerParts = [];
     for (const answer of answersArray) {
@@ -212,10 +227,10 @@ function highlightAnswers(answersArray) {
         answerParts.push(...parts);
     }
 
-    console.log('📋 Answer parts to match:', answerParts);
+    console.log('ðŸ“‹ Answer parts to match:', answerParts);
 
     if (!window.__quizOptions) {
-        console.error('❌ No quiz options found');
+        console.error('âŒ No quiz options found');
         return;
     }
 
@@ -285,11 +300,11 @@ function highlightAnswers(answersArray) {
         }
 
         if (shouldHighlight) {
-            console.log(`✓ Matched option: ${match.text}`);
+            console.log(`âœ“ Matched option: ${match.text}`);
 
             // Tick the checkbox/radio
             if (radio && !radio.checked) {
-                console.log('  → Ticking input');
+                console.log('  â†’ Ticking input');
                 radio.checked = true;
                 radio.dispatchEvent(new Event('input', { bubbles: true }));
                 radio.dispatchEvent(new Event('change', { bubbles: true }));
@@ -321,9 +336,9 @@ function highlightAnswers(answersArray) {
         }
     });
 
-    // ⚡ Check if any option was matched
+    // âš¡ Check if any option was matched
     if (highlightedOptions.length === 0) {
-        console.warn('⚠️ No matching option found for AI answer:', answersArray);
+        console.warn('âš ï¸ No matching option found for AI answer:', answersArray);
         chrome.runtime.sendMessage({
             action: 'ERROR',
             message: `No match found! AI says: "${answersArray[0]}" - Please select manually.`
@@ -335,7 +350,7 @@ function highlightAnswers(answersArray) {
 // CLEAR ANSWER HIGHLIGHTS
 // ============================================
 function clearAnswerHighlights() {
-    console.log('🧹 Clearing previous answer highlights...');
+    console.log('ðŸ§¹ Clearing previous answer highlights...');
 
     highlightedOptions.forEach(label => {
         label.style.border = '';
@@ -351,7 +366,7 @@ function clearAnswerHighlights() {
 // AUTO-CLICK BUTTONS
 // ============================================
 async function autoClickButtons() {
-    console.log('🤖 Auto-click triggered');
+    console.log('ðŸ¤– Auto-click triggered');
 
     // Get the strategy to determine quiz flow
     const hostname = window.location.hostname || 'local_' + window.location.pathname.split('/').pop().replace('.html', '');
@@ -360,24 +375,24 @@ async function autoClickButtons() {
     const strategy = result[strategyKey];
 
     if (!strategy) {
-        console.warn('⚠️ No strategy found, using default flow');
+        console.warn('âš ï¸ No strategy found, using default flow');
         // Fallback to old logic
         defaultAutoClick();
         return;
     }
 
-    console.log('📋 Quiz flow type:', strategy.quiz_flow);
-    console.log('📋 Has submit button:', strategy.has_submit_button);
-    console.log('📋 Has next button:', strategy.has_next_button);
+    console.log('ðŸ“‹ Quiz flow type:', strategy.quiz_flow);
+    console.log('ðŸ“‹ Has submit button:', strategy.has_submit_button);
+    console.log('ðŸ“‹ Has next button:', strategy.has_next_button);
 
     // Execute based on quiz flow type
     switch (strategy.quiz_flow) {
         case 'submit-then-next':
-            // Click option → Submit → Next
+            // Click option â†’ Submit â†’ Next
             if (strategy.has_submit_button) {
                 const submitBtn = findButtonByText(['Submit', 'Check', 'Verify', 'Confirm']);
                 if (submitBtn && !submitBtn.disabled) {
-                    console.log('✓ Clicking Submit button');
+                    console.log('âœ“ Clicking Submit button');
                     submitBtn.click();
 
                     // Wait for submit, then click Next
@@ -385,39 +400,39 @@ async function autoClickButtons() {
                         setTimeout(() => {
                             const nextBtn = findButtonByText(['Next', 'NEXT', 'Continue', 'OK']);
                             if (nextBtn && !nextBtn.disabled) {
-                                console.log('✓ Clicking Next button');
+                                console.log('âœ“ Clicking Next button');
                                 nextBtn.click();
                             }
                         }, 1500);
                     }
                 } else {
-                    console.warn('⚠️ Submit button not found or disabled');
+                    console.warn('âš ï¸ Submit button not found or disabled');
                 }
             }
             break;
 
         case 'click-then-next':
-            // Click option → Next (no submit)
+            // Click option â†’ Next (no submit)
             if (strategy.has_next_button) {
                 setTimeout(() => {
                     const nextBtn = findButtonByText(['Next', 'NEXT', 'Continue', 'OK']);
                     if (nextBtn && !nextBtn.disabled) {
-                        console.log('✓ Clicking Next button');
+                        console.log('âœ“ Clicking Next button');
                         nextBtn.click();
                     } else {
-                        console.warn('⚠️ Next button not found or disabled');
+                        console.warn('âš ï¸ Next button not found or disabled');
                     }
                 }, 1000);
             }
             break;
 
         case 'auto-advance':
-            // Click option → wait for auto-advance (do nothing)
-            console.log('✓ Auto-advance mode - waiting for automatic progression');
+            // Click option â†’ wait for auto-advance (do nothing)
+            console.log('âœ“ Auto-advance mode - waiting for automatic progression');
             break;
 
         default:
-            console.warn('⚠️ Unknown quiz flow type, using default');
+            console.warn('âš ï¸ Unknown quiz flow type, using default');
             defaultAutoClick();
     }
 }
@@ -426,13 +441,13 @@ async function autoClickButtons() {
 function defaultAutoClick() {
     const submitBtn = findButtonByText(['Submit', 'Check', 'Verify', 'Confirm']);
     if (submitBtn && !submitBtn.disabled) {
-        console.log('✓ Clicking Submit button');
+        console.log('âœ“ Clicking Submit button');
         submitBtn.click();
 
         setTimeout(() => {
             const nextBtn = findButtonByText(['Next', 'NEXT', 'Continue', 'OK']);
             if (nextBtn && !nextBtn.disabled) {
-                console.log('✓ Clicking Next button');
+                console.log('âœ“ Clicking Next button');
                 nextBtn.click();
             }
         }, 1500);
@@ -457,12 +472,12 @@ function toggleInspector(active) {
     isInspecting = active;
 
     if (active) {
-        console.log('🔍 Inspector mode activated');
+        console.log('ðŸ” Inspector mode activated');
         document.body.classList.add('groq-cursor-mode');
         document.addEventListener('mouseover', handleHover);
         document.addEventListener('click', handleClick, true);
     } else {
-        console.log('🔍 Inspector mode deactivated');
+        console.log('ðŸ” Inspector mode deactivated');
         document.body.classList.remove('groq-cursor-mode');
         document.removeEventListener('mouseover', handleHover);
         document.removeEventListener('click', handleClick, true);
@@ -496,13 +511,13 @@ function handleClick(event) {
     const cleanedHTML = cleanHTML(container);
     const hostname = window.location.hostname || 'local_' + window.location.pathname.split('/').pop().replace('.html', '');
 
-    console.log('📦 ========== CAPTURED CONTAINER ==========');
+    console.log('ðŸ“¦ ========== CAPTURED CONTAINER ==========');
     console.log('Container Element:', container);
-    console.log('🌐 Hostname:', hostname);
-    console.log('📏 HTML Length:', cleanedHTML.length, 'characters');
-    console.log('📄 HTML Preview (first 1000 chars):');
+    console.log('ðŸŒ Hostname:', hostname);
+    console.log('ðŸ“ HTML Length:', cleanedHTML.length, 'characters');
+    console.log('ðŸ“„ HTML Preview (first 1000 chars):');
     console.log(cleanedHTML.substring(0, 1000));
-    console.log('📤 Sending to AI for analysis...');
+    console.log('ðŸ“¤ Sending to AI for analysis...');
 
     // Visual feedback
     container.classList.remove('groq-inspector-active');
@@ -516,7 +531,7 @@ function handleClick(event) {
         if (capturedElement) {
             capturedElement.classList.remove('groq-captured');
             capturedElement = null;
-            console.log('🧹 Removed inspector capture highlight');
+            console.log('ðŸ§¹ Removed inspector capture highlight');
         }
     }, 2000);
 
@@ -583,3 +598,183 @@ function cleanHTML(element) {
 
     return clone.outerHTML;
 }
+// ============================================
+// CODE MODAL DISPLAY (for coding questions)
+// ============================================
+let globalCodeModalData = null;
+
+function showCodeModal(code, language, question) {
+    console.log(" Displaying code modal");
+    globalCodeModalData = { code, language, question };
+
+    const existingModal = document.querySelector(".code-modal-overlay");
+    if (existingModal) existingModal.remove();
+
+    const overlay = document.createElement("div");
+    overlay.className = "code-modal-overlay";
+
+    const modal = document.createElement("div");
+    modal.className = "code-modal";
+
+    const header = document.createElement("div");
+    header.className = "code-modal-header";
+    header.innerHTML = "<h3>AI Generated Solution</h3><button class='code-modal-close'></button>";
+
+    const body = document.createElement("div");
+    body.className = "code-modal-body";
+    body.innerHTML = `<div class="code-language-badge">${language}</div><pre><code>${escapeHtml(code)}</code></pre>`;
+
+    const footer = document.createElement("div");
+    footer.className = "code-modal-footer";
+    footer.innerHTML = '<button class="code-modal-copy-btn"> Copy Code</button><button class="code-modal-insert-btn"> Insert into Editor</button>';
+
+    modal.appendChild(header);
+    modal.appendChild(body);
+    modal.appendChild(footer);
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+
+    insertCodeIntoEditor(code);
+    console.log(" Code auto-inserted");
+
+    const close = () => { overlay.remove(); globalCodeModalData = null; };
+    header.querySelector(".code-modal-close").addEventListener("click", close);
+    overlay.addEventListener("click", (e) => { if (e.target === overlay) close(); });
+
+    const copyBtn = footer.querySelector(".code-modal-copy-btn");
+    copyBtn.addEventListener("click", async () => {
+        await navigator.clipboard.writeText(code);
+        copyBtn.innerHTML = " Copied!";
+        copyBtn.classList.add("copied");
+        setTimeout(() => { copyBtn.innerHTML = " Copy Code"; copyBtn.classList.remove("copied"); }, 2000);
+    });
+
+    footer.querySelector(".code-modal-insert-btn").addEventListener("click", () => insertCodeIntoEditor(code));
+
+    // ========== KEYBOARD SHORTCUTS ==========
+    const handleKeyboard = (e) => {
+        // Ctrl+\ - Toggle modal visibility
+        if (e.ctrlKey && e.key === "\\") {
+            e.preventDefault();
+            overlay.classList.toggle("hidden");
+            console.log("🔄 Modal toggled");
+        }
+        // Ctrl+Shift+Up/Down - Scroll modal content
+        else if (e.ctrlKey && e.shiftKey && e.key === "ArrowUp") {
+            e.preventDefault();
+            body.scrollBy({ top: -100, behavior: "smooth" });
+        }
+        else if (e.ctrlKey && e.shiftKey && e.key === "ArrowDown") {
+            e.preventDefault();
+            body.scrollBy({ top: 100, behavior: "smooth" });
+        }
+        // Ctrl+Arrow keys - Move modal position
+        else if (e.ctrlKey && !e.shiftKey && e.key === "ArrowUp") {
+            e.preventDefault();
+            const currentTop = parseInt(modal.style.top) || modal.offsetTop;
+            modal.style.top = (currentTop - 10) + "px";
+        }
+        else if (e.ctrlKey && !e.shiftKey && e.key === "ArrowDown") {
+            e.preventDefault();
+            const currentTop = parseInt(modal.style.top) || modal.offsetTop;
+            modal.style.top = (currentTop + 10) + "px";
+        }
+        else if (e.ctrlKey && !e.shiftKey && e.key === "ArrowLeft") {
+            e.preventDefault();
+            const currentLeft = parseInt(modal.style.left) || modal.offsetLeft;
+            modal.style.left = (currentLeft - 10) + "px";
+        }
+        else if (e.ctrlKey && !e.shiftKey && e.key === "ArrowRight") {
+            e.preventDefault();
+            const currentLeft = parseInt(modal.style.left) || modal.offsetLeft;
+            modal.style.left = (currentLeft + 10) + "px";
+        }
+        // Ctrl+Shift+X - Close and delete modal
+        else if (e.ctrlKey && e.shiftKey && e.key.toUpperCase() === "X") {
+            e.preventDefault();
+            close();
+            console.log("🗑️ Modal closed");
+        }
+    };
+
+    document.addEventListener("keydown", handleKeyboard);
+
+    // ========== DRAG FUNCTIONALITY ==========
+    let isDragging = false;
+    let dragOffsetX = 0;
+    let dragOffsetY = 0;
+
+    header.addEventListener("mousedown", (e) => {
+        if (e.target === header || e.target === header.querySelector("h3")) {
+            isDragging = true;
+            const rect = modal.getBoundingClientRect();
+            dragOffsetX = e.clientX - rect.left;
+            dragOffsetY = e.clientY - rect.top;
+            header.style.cursor = "grabbing";
+        }
+    });
+
+    const handleDrag = (e) => {
+        if (isDragging) {
+            e.preventDefault();
+            modal.style.left = (e.clientX - dragOffsetX) + "px";
+            modal.style.top = (e.clientY - dragOffsetY) + "px";
+        }
+    };
+
+    const stopDrag = () => {
+        if (isDragging) {
+            isDragging = false;
+            header.style.cursor = "";
+        }
+    };
+
+    document.addEventListener("mousemove", handleDrag);
+    document.addEventListener("mouseup", stopDrag);
+
+    // Cleanup all event listeners
+    const originalRemove = overlay.remove.bind(overlay);
+    overlay.remove = () => {
+        document.removeEventListener("keydown", handleKeyboard);
+        document.removeEventListener("mousemove", handleDrag);
+        document.removeEventListener("mouseup", stopDrag);
+        originalRemove();
+    };
+}
+
+function insertCodeIntoEditor(code) {
+    const textarea = document.querySelector("textarea");
+    if (textarea) {
+        textarea.value = code;
+        textarea.dispatchEvent(new Event("input", { bubbles: true }));
+        textarea.dispatchEvent(new Event("change", { bubbles: true }));
+        console.log(" Code inserted");
+    } else {
+        console.warn(" No textarea found");
+        navigator.clipboard.writeText(code);
+    }
+}
+
+function escapeHtml(text) {
+    const div = document.createElement("div");
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.action === "SHOW_CODE_SOLUTION") {
+        showCodeModal(request.code, request.language, request.question);
+        sendResponse({ success: true });
+    }
+});
+// ============================================
+// CTRL+ENTER SHORTCUT FOR SOLVE BUTTON
+// ============================================
+document.addEventListener("keydown", (e) => {
+    if (e.ctrlKey && e.key === "Enter") {
+        e.preventDefault();
+        // Trigger solve button click
+        extractAndSolve(); // Call directly
+        console.log(" Ctrl+Enter pressed - triggering solve");
+    }
+});

@@ -1,3 +1,6 @@
+// Import coding solver module
+importScripts('coding_solver.js');
+
 // ============================================
 // OPEN SIDE PANEL ON ICON CLICK
 // ============================================
@@ -335,7 +338,8 @@ async function solveQuiz(data, tabId) {
     try {
         const { question, options } = data;
 
-        if (!question || !options || options.length === 0) {
+        // Validate data - allow 0 options for coding questions
+        if (!question || !options) {
             throw new Error("Invalid quiz data");
         }
 
@@ -365,12 +369,21 @@ async function solveQuiz(data, tabId) {
             return;
         }
 
-        // Validate option count (should be 3-6 options for a real quiz)
+        // Validate option count
+        // - 0 options = coding question → route to CodingSolver
+        // - 3-6 options = multiple choice → continue normal flow  
+        // - 1-2 or 7+ options = invalid
+        if (options.length === 0) {
+            console.log('💻 Coding question detected (0 options)');
+            await CodingSolver.solve(question, tabId);
+            return;
+        }
+
         if (options.length < 3 || options.length > 6) {
             console.warn(`⚠️ Invalid option count: ${options.length}`);
             chrome.runtime.sendMessage({
                 action: 'ERROR',
-                message: `Invalid quiz: Found ${options.length} options (expected 3-6)`
+                message: `Invalid quiz: Found ${options.length} options (expected 0 for coding, or 3-6 for multiple choice)`
             });
             return;
         }

@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', () => {
+﻿document.addEventListener('DOMContentLoaded', () => {
     const autoModeToggle = document.getElementById('autoMode');
     const manualTriggerBtn = document.getElementById('manualTrigger');
     const statusText = document.getElementById('statusText');
@@ -152,6 +152,9 @@ document.addEventListener('DOMContentLoaded', () => {
             statusText.style.color = '#666';
         } else if (request.action === 'SHOW_RESULT') {
             displayResult(request.data);
+        } else if (request.action === 'CODING_SOLUTION') {
+            // Display coding question result
+            displayCodingResult(request);
         } else if (request.action === 'ERROR') {
             statusText.textContent = 'Error: ' + request.message;
             statusText.style.color = 'red';
@@ -190,5 +193,12 @@ document.addEventListener('DOMContentLoaded', () => {
         aiAnswer.textContent = data.answer || 'Waiting for AI...';
         statusText.textContent = `Solved! (${data.model})`;
         statusText.style.color = '#333';
+    }
+    
+    function displayCodingResult(data) {
+        questionText.textContent = data.question;
+        aiAnswer.textContent = `[${data.language.toUpperCase()}]\\n${data.code}`;
+        statusText.textContent = ' Code Generated!';
+        statusText.style.color = '#10b981';
     }
 });
