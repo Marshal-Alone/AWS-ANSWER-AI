@@ -2,17 +2,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const autoModeToggle = document.getElementById('autoMode');
     const manualTriggerBtn = document.getElementById('manualTrigger');
     const statusText = document.getElementById('statusText');
-    const resultsArea = document.getElementById('resultsArea');
     const questionText = document.getElementById('questionText');
-    const optionsList = document.getElementById('optionsList');
     const aiAnswer = document.getElementById('aiAnswer');
     const intervalInput = document.getElementById('intervalInput');
     const intervalSetting = document.getElementById('intervalSetting');
     const autoClickMode = document.getElementById('autoClickMode');
-    const confidenceBadge = document.getElementById('confidenceBadge');
-    const modelInfo = document.getElementById('modelInfo');
     const aiProviderSelect = document.getElementById('aiProvider');
-    const quizModeSelect = document.getElementById('quizMode');
 
     // Initialization elements
     const initializeBtn = document.getElementById('initializeBtn');
@@ -25,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initialize Inspector button
     initializeBtn.addEventListener('click', () => {
-        statusText.textContent = '🔍 Inspector mode activated. Click on a quiz question container...';
+        statusText.textContent = '🔍 Inspector mode activated. Click on a quiz container...';
         statusText.style.color = '#f59e0b';
 
         sendMessageToContentScript({ action: 'TOGGLE_INSPECTOR', value: true });
@@ -38,9 +33,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         chrome.storage.local.remove(strategyKey, () => {
             configStatus.style.display = 'none';
-            statusText.textContent = `Configuration reset for ${hostname}. Click Initialize to set up again.`;
-            statusText.style.color = '#f59e0b';
-            console.log(`Strategy cleared for ${hostname}`);
+            statusText.textContent = `Configuration reset. Click Initialize to set up again.`;
+            statusText.style.color = '#666';
         });
     });
 
@@ -51,13 +45,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         chrome.storage.local.get([strategyKey], (result) => {
             if (result[strategyKey]) {
-                // Strategy exists - show config status
                 configStatus.style.display = 'flex';
                 configHostname.textContent = `Configured for ${hostname}`;
-                statusText.textContent = `✅ Ready for ${hostname}`;
+                statusText.textContent = `✅ Ready`;
                 statusText.style.color = '#10b981';
             } else {
-                // No strategy - hide config status
                 configStatus.style.display = 'none';
             }
         });
@@ -74,16 +66,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 try {
                     const url = new URL(tabs[0].url);
-                    // Handle file:// URLs
                     if (url.protocol === 'file:') {
-                        // Extract filename from file path
                         const filename = url.pathname.split('/').pop().replace('.html', '');
                         resolve(`local_${filename}`);
                     } else {
                         resolve(url.hostname);
                     }
                 } catch (error) {
-                    console.error('Error parsing URL:', error);
                     resolve('unknown');
                 }
             });
@@ -91,7 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Load saved settings
-    chrome.storage.local.get(['autoMode', 'checkInterval', 'autoClickEnabled', 'aiProvider', 'quizMode'], (result) => {
+    chrome.storage.local.get(['autoMode', 'checkInterval', 'autoClickEnabled', 'aiProvider'], (result) => {
         if (result.autoMode) {
             autoModeToggle.checked = result.autoMode;
             intervalSetting.classList.add('active');
@@ -105,26 +94,13 @@ document.addEventListener('DOMContentLoaded', () => {
         if (result.aiProvider) {
             aiProviderSelect.value = result.aiProvider;
         }
-        if (result.quizMode) {
-            quizModeSelect.value = result.quizMode;
-        }
-    });
-
-    // Save quiz mode selection
-    quizModeSelect.addEventListener('change', () => {
-        const mode = quizModeSelect.value;
-        chrome.storage.local.set({ quizMode: mode });
-        const modeName = quizModeSelect.options[quizModeSelect.selectedIndex].text;
-        statusText.textContent = `Switched to ${modeName}`;
-        statusText.style.color = '#667eea';
     });
 
     // Save AI provider selection
     aiProviderSelect.addEventListener('change', () => {
         const provider = aiProviderSelect.value;
         chrome.storage.local.set({ aiProvider: provider });
-        const providerName = aiProviderSelect.options[aiProviderSelect.selectedIndex].text;
-        statusText.textContent = `Switched to ${providerName}`;
+        statusText.textContent = `Switched to ${aiProviderSelect.options[aiProviderSelect.selectedIndex].text}`;
         statusText.style.color = '#667eea';
     });
 
@@ -160,7 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         sendMessageToContentScript({ action: 'TOGGLE_AUTO_MODE', value: isAuto, interval: interval });
-        statusText.textContent = isAuto ? `Auto Mode Enabled (checking every ${interval}s)` : 'Auto Mode Disabled';
+        statusText.textContent = isAuto ? `Auto Mode Enabled (every ${interval}s)` : 'Auto Mode Disabled';
     });
 
     // Manual Trigger
@@ -169,20 +145,26 @@ document.addEventListener('DOMContentLoaded', () => {
         sendMessageToContentScript({ action: 'EXTRACT_AND_SOLVE' });
     });
 
-    // Listen for messages from content script
+    // Listen for messages from background script
     chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         if (request.action === 'UPDATE_STATUS') {
             statusText.textContent = request.message;
+            statusText.style.color = '#666';
         } else if (request.action === 'SHOW_RESULT') {
             displayResult(request.data);
         } else if (request.action === 'ERROR') {
             statusText.textContent = 'Error: ' + request.message;
             statusText.style.color = 'red';
         } else if (request.action === 'STRATEGY_SAVED') {
-            // Strategy was successfully saved
             configStatus.style.display = 'flex';
             configHostname.textContent = `Configured for ${request.hostname}`;
-            statusText.textContent = `✅ Strategy saved for ${request.hostname}!`;
+
+            // Show validation details if available
+            if (request.validation && request.validation.success) {
+                statusText.textContent = `✅ Strategy saved! (Q: ✓, Options: ${request.validation.optionsCount}/4)`;
+            } else {
+                statusText.textContent = `✅ Strategy saved!`;
+            }
             statusText.style.color = '#10b981';
         }
     });
@@ -196,51 +178,17 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             chrome.tabs.sendMessage(tabs[0].id, message).catch(err => {
-                statusText.innerHTML = '⚠️ Please <strong>hard refresh</strong> this page:<br>Press <kbd>Ctrl+Shift+R</kbd> (Windows/Linux)<br>or <kbd>Cmd+Shift+R</kbd> (Mac)';
+                statusText.innerHTML = '⚠️ Please <strong>refresh</strong> this page:<br>Press <kbd>Ctrl+Shift+R</kbd> or <kbd>Cmd+Shift+R</kbd>';
                 statusText.style.color = '#ff6b6b';
                 statusText.style.fontSize = '13px';
-                console.error('Content script not loaded:', err);
             });
         });
     }
 
     function displayResult(data) {
-        resultsArea.style.display = 'block';
         questionText.textContent = data.question;
-
-        // Only update options list if element exists (may be commented out)
-        if (optionsList) {
-            optionsList.innerHTML = '';
-            data.options.forEach((opt, index) => {
-                const li = document.createElement('li');
-                li.textContent = opt;
-                optionsList.appendChild(li);
-            });
-        }
-
         aiAnswer.textContent = data.answer || 'Waiting for AI...';
-
-        // Display confidence (only if element exists)
-        if (data.confidence && confidenceBadge) {
-            const conf = parseFloat(data.confidence);
-            confidenceBadge.textContent = `${Math.round(conf * 100)}% confident`;
-            confidenceBadge.className = 'confidence-badge';
-
-            if (conf >= 0.8) {
-                confidenceBadge.classList.add('confidence-high');
-            } else if (conf >= 0.5) {
-                confidenceBadge.classList.add('confidence-medium');
-            } else {
-                confidenceBadge.classList.add('confidence-low');
-            }
-        }
-
-        // Display model info (only if element exists)
-        if (data.model && modelInfo) {
-            modelInfo.textContent = `Model: ${data.model}`;
-        }
-
-        statusText.textContent = `Solved! Found ${data.options.length} options.`;
+        statusText.textContent = `Solved! (${data.model})`;
         statusText.style.color = '#333';
     }
 });

@@ -1,0 +1,39 @@
+{
+    "manifest_version": 3,
+    "name": "AI Quiz Solver",
+    "version": "2.0",
+    "description": "AI-powered quiz solver that learns quiz formats dynamically",
+    "permissions": [
+        "sidePanel",
+        "activeTab",
+        "scripting",
+        "storage"
+    ],
+    "host_permissions": [
+        "https://api.groq.com/*",
+        "https://generativelanguage.googleapis.com/*"
+    ],
+    "background": {
+        "service_worker": "background.js"
+    },
+    "side_panel": {
+        "default_path": "sidebar.html"
+    },
+    "content_scripts": [
+        {
+            "matches": [
+                "<all_urls>"
+            ],
+            "js": [
+                "content.js"
+            ],
+            "css": [
+                "styles.css"
+            ],
+            "all_frames": true
+        }
+    ],
+    "action": {
+        "default_title": "Open AI Quiz Solver"
+    }
+}

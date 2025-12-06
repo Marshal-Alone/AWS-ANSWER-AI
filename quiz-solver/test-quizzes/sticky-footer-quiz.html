@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sticky Footer Quiz (Next Button Outside Container)</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f0f2f5;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .quiz-content {
+            flex: 1;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+
+        .question-container {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .question-title {
+            font-size: 22px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #4CAF50;
+        }
+
+        .answer-options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .option-wrapper {
+            padding: 18px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .option-wrapper:hover {
+            border-color: #4CAF50;
+            background: #f1f8f4;
+        }
+
+        .option-wrapper input {
+            width: 20px;
+            height: 20px;
+        }
+
+        .option-label {
+            font-size: 16px;
+            color: #333;
+        }
+
+        /* Sticky footer - Next button is OUTSIDE the question container */
+        .sticky-footer {
+            position: sticky;
+            bottom: 0;
+            background: white;
+            border-top: 2px solid #e0e0e0;
+            padding: 20px;
+            box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .progress-info {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .footer-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        button {
+            padding: 12px 32px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-submit {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .btn-submit:hover {
+            background: #45a049;
+        }
+
+        .btn-next {
+            background: #2196F3;
+            color: white;
+        }
+
+        .btn-next:hover {
+            background: #0b7dda;
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="quiz-content">
+        <div class="question-container">
+            <h1 class="question-title">What is the primary benefit of using Infrastructure as Code (IaC)?</h1>
+
+            <div class="answer-options">
+                <div class="option-wrapper">
+                    <input type="radio" id="opt1" name="iac" value="a">
+                    <label for="opt1" class="option-label">Manual configuration is faster</label>
+                </div>
+
+                <div class="option-wrapper">
+                    <input type="radio" id="opt2" name="iac" value="b">
+                    <label for="opt2" class="option-label">Automated, repeatable, and version-controlled
+                        infrastructure</label>
+                </div>
+
+                <div class="option-wrapper">
+                    <input type="radio" id="opt3" name="iac" value="c">
+                    <label for="opt3" class="option-label">Eliminates the need for cloud providers</label>
+                </div>
+
+                <div class="option-wrapper">
+                    <input type="radio" id="opt4" name="iac" value="d">
+                    <label for="opt4" class="option-label">Increases infrastructure costs</label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sticky footer with Next button OUTSIDE the question container -->
+    <div class="sticky-footer">
+        <div class="progress-info">Question 1 of 10</div>
+        <div class="footer-buttons">
+            <button class="btn-submit" id="submitBtn">Check Answer</button>
+            <button class="btn-next" id="nextBtn" style="display:none;">Next Question →</button>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('submitBtn').addEventListener('click', function () {
+            const selected = document.querySelector('input[name="iac"]:checked');
+            if (selected) {
+                if (selected.value === 'b') {
+                    alert('✅ Correct! IaC provides automated, repeatable, and version-controlled infrastructure.');
+                } else {
+                    alert('❌ Incorrect. The correct answer is: Automated, repeatable, and version-controlled infrastructure.');
+                }
+                this.style.display = 'none';
+                document.getElementById('nextBtn').style.display = 'inline-block';
+            } else {
+                alert('Please select an answer');
+            }
+        });
+
+        document.getElementById('nextBtn').addEventListener('click', function () {
+            alert('Loading next question...');
+            location.reload();
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Class Quiz (React-style)</title>
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            max-width: 900px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #0f172a;
+            color: white;
+        }
+
+        /* Simulating React/styled-components dynamic classes */
+        .sc-abc123 {
+            background: #1e293b;
+            padding: 50px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .css-1x2y3z4 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 30px;
+            color: #f1f5f9;
+        }
+
+        /* Using stable data attributes instead */
+        [data-testid="quiz-question"] {
+            margin-bottom: 24px;
+        }
+
+        [data-testid="quiz-options"] {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        [data-role="option-card"] {
+            background: #334155;
+            padding: 20px;
+            border-radius: 12px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        [data-role="option-card"]:hover {
+            border-color: #3b82f6;
+            background: #475569;
+        }
+
+        [data-role="option-card"] input {
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+        }
+
+        [data-role="option-text"] {
+            font-size: 17px;
+            color: #e2e8f0;
+        }
+
+        [data-action="submit"] {
+            margin-top: 32px;
+            padding: 16px 48px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        [data-action="submit"]:hover {
+            background: #2563eb;
+        }
+
+        [data-action="next"] {
+            margin-left: 12px;
+            padding: 16px 48px;
+            background: #10b981;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="sc-abc123">
+        <div data-testid="quiz-question">
+            <h2 class="css-1x2y3z4">What is the main advantage of using containerization?</h2>
+        </div>
+
+        <div data-testid="quiz-options">
+            <div data-role="option-card">
+                <input type="radio" id="q1a" name="container" value="a">
+                <label for="q1a" data-role="option-text">Increased hardware costs</label>
+            </div>
+
+            <div data-role="option-card">
+                <input type="radio" id="q1b" name="container" value="b">
+                <label for="q1b" data-role="option-text">Application portability and consistency</label>
+            </div>
+
+            <div data-role="option-card">
+                <input type="radio" id="q1c" name="container" value="c">
+                <label for="q1c" data-role="option-text">Slower deployment times</label>
+            </div>
+
+            <div data-role="option-card">
+                <input type="radio" id="q1d" name="container" value="d">
+                <label for="q1d" data-role="option-text">Reduced security</label>
+            </div>
+        </div>
+
+        <div style="margin-top: 40px; text-align: center;">
+            <button data-action="submit" id="submitBtn">Submit Answer</button>
+            <button data-action="next" id="nextBtn" style="display:none;">Next Question</button>
+        </div>
+    </div>
+
+    <script>
+        document.querySelector('[data-action="submit"]').addEventListener('click', function () {
+            const selected = document.querySelector('input[name="container"]:checked');
+            if (selected) {
+                alert('✅ Correct! Containerization provides application portability and consistency.');
+                this.style.display = 'none';
+                document.querySelector('[data-action="next"]').style.display = 'inline-block';
+            } else {
+                alert('Please select an answer');
+            }
+        });
+
+        document.querySelector('[data-action="next"]').addEventListener('click', function () {
+            alert('Loading next question...');
+            location.reload();
+        });
+    </script>
+</body>
+
+</html>

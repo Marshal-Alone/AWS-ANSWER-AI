@@ -1,0 +1,29 @@
+/* Inspector Tool Styles */
+
+/* Highlight class for elements being hovered during inspection */
+.groq-inspector-active {
+    outline: 3px solid #f59e0b !important; /* Golden/Orange High Visibility */
+    background-color: rgba(245, 158, 11, 0.1) !important; /* Slight tint */
+    cursor: crosshair !important;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5) !important;
+    z-index: 999999 !important;
+    position: relative !important;
+}
+
+/* Body class when inspector mode is active */
+.groq-cursor-mode {
+    cursor: crosshair !important;
+    user-select: none !important;
+}
+
+/* Success flash animation when element is captured */
+@keyframes captureFlash {
+    0% { outline-color: #10b981; }
+    50% { outline-color: #34d399; }
+    100% { outline-color: #10b981; }
+}
+
+.groq-captured {
+    outline: 4px solid #10b981 !important;
+    animation: captureFlash 0.5s ease-in-out;
+}

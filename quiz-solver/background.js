@@ -58,6 +58,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         console.log('🎯 Starting quiz solve with data:', request.data);
         solveQuiz(request.data, sender.tab?.id);
         return true; // Keep channel open for async response
+    } else if (request.action === "ANALYZE_HTML") {
+        console.log('🔍 Analyzing HTML for strategy generation');
+        analyzeQuizStructure(request.html, request.hostname, sender.tab?.id);
+        return true;
     }
 });
 
@@ -441,3 +445,150 @@ chrome.runtime.onInstalled.addListener(() => {
         }
     });
 });
+
+// ============================================
+// AI-POWERED STRATEGY GENERATION
+// ============================================
+
+/**
+ * Analyze quiz HTML structure using Groq AI and generate extraction strategy
+ * @param {string} htmlContent - Cleaned HTML from the quiz container
+ * @param {string} hostname - Website hostname for strategy storage
+ * @param {number} tabId - Tab ID to send feedback messages
+ */
+async function analyzeQuizStructure(htmlContent, hostname, tabId) {
+    console.log('=== ANALYZING QUIZ STRUCTURE ===');
+    console.log('Hostname:', hostname);
+    console.log('HTML Length:', htmlContent.length);
+
+    try {
+        sendStatus('🔍 AI is analyzing quiz structure...');
+
+        // Hardened system prompt to avoid dynamic CSS classes
+        const systemPrompt = `You are an HTML parser. Analyze the provided HTML and return a JSON object with CSS selectors.
+
+CRITICAL RULES:
+1. Avoid dynamic/hashed classes (e.g., ".css-1x23", ".sc-abc", ".MuiBox-root.css-xxxxx").
+2. Prefer stable attributes in this order: "id", "data-testid", "name", "aria-label", "role", or distinct class names like ".btn-primary", ".question-text".
+3. If the Next button is not visible in the HTML, return "null" for that field.
+4. For options_selector, ensure it targets ALL option elements (use a selector that matches multiple elements).
+5. Return ONLY valid JSON, no markdown, no explanations.
+
+Output JSON Structure:
+{
+  "question_selector": "selector string",
+  "options_selector": "selector string (must target all options)",
+  "input_type": "radio" | "checkbox" | "text",
+  "submit_next_selector": "selector string or null"
+}`;
+
+        const userPrompt = `Analyze this quiz HTML and extract CSS selectors:\n\n${htmlContent}`;
+
+        // Call Groq API
+        const response = await fetch(CONFIG.PROVIDERS.GROQ.apiUrl, {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${CONFIG.PROVIDERS.GROQ.apiKey}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                messages: [
+                    { role: "system", content: systemPrompt },
+                    { role: "user", content: userPrompt }
+                ],
+                model: CONFIG.PROVIDERS.GROQ.model,
+                temperature: 0.1,
+                max_tokens: 1000,
+                response_format: { type: "json_object" }
+            })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.error?.message || `Groq API Error: ${response.status}`);
+        }
+
+        const result = await response.json();
+        const rawAnswer = result.choices?.[0]?.message?.content?.trim();
+
+        console.log('=== GROQ AI RESPONSE ===');
+        console.log('Raw Response:', rawAnswer);
+
+        if (!rawAnswer) {
+            throw new Error("Empty response from Groq AI");
+        }
+
+        // Parse JSON strategy
+        let strategy;
+        try {
+            strategy = JSON.parse(rawAnswer);
+        } catch (parseError) {
+            console.error('JSON Parse Error:', parseError);
+            throw new Error("AI returned invalid JSON format");
+        }
+
+        // Validate strategy structure
+        if (!strategy.question_selector || !strategy.options_selector) {
+            console.error('Invalid strategy:', strategy);
+            throw new Error(`AI strategy incomplete. Missing: ${!strategy.question_selector ? 'question_selector ' : ''}${!strategy.options_selector ? 'options_selector' : ''}`);
+        }
+
+        // Set defaults for optional fields
+        if (!strategy.input_type) {
+            strategy.input_type = 'radio'; // Default to radio
+            console.warn('input_type not provided, defaulting to "radio"');
+        }
+
+        if (!strategy.submit_next_selector) {
+            strategy.submit_next_selector = null; // Explicitly set to null
+            console.warn('submit_next_selector not provided, will use fallback detection');
+        }
+
+        console.log('✅ Parsed Strategy:', strategy);
+
+        // Store strategy with hostname key
+        const strategyKey = `quiz_strategy_${hostname}`;
+        await chrome.storage.local.set({ [strategyKey]: strategy });
+
+        console.log(`💾 Strategy saved for ${hostname}`);
+
+        // Send success message to sidebar
+        chrome.runtime.sendMessage({
+            action: "STRATEGY_SAVED",
+            hostname: hostname,
+            strategy: strategy
+        });
+
+        // Send success message to tab
+        if (tabId) {
+            chrome.tabs.sendMessage(tabId, {
+                action: "STRATEGY_APPLIED",
+                success: true
+            }).catch(err => console.warn('Could not notify tab:', err));
+        }
+
+        sendStatus(`✅ Strategy saved for ${hostname}!`);
+
+    } catch (error) {
+        console.error('❌ Strategy generation error:', error);
+
+        let userMessage = error.message;
+
+        // Friendly error messages
+        if (error.message.includes("API Error: 401")) {
+            userMessage = "🔑 Invalid Groq API key. Please check configuration.";
+        } else if (error.message.includes("API Error: 429")) {
+            userMessage = "⚠️ Rate limit exceeded. Please wait a minute.";
+        } else if (error.message.includes("fetch")) {
+            userMessage = "🌐 Network error. Check your internet connection.";
+        }
+
+        chrome.runtime.sendMessage({
+            action: "ERROR",
+            message: `Strategy generation failed: ${userMessage}`
+        });
+
+        sendStatus(`❌ Error: ${userMessage}`);
+    }
+}
+

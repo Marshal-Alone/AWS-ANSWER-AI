@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multiple Answer Quiz (Checkboxes)</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .quiz-container {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        }
+
+        .question-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+        }
+
+        .question-text {
+            font-size: 20px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .question-hint {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-top: 8px;
+        }
+
+        .options-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .option-item {
+            padding: 16px;
+            margin: 12px 0;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .option-item:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+            transform: translateX(5px);
+        }
+
+        .option-item input[type="checkbox"] {
+            width: 22px;
+            height: 22px;
+            cursor: pointer;
+        }
+
+        .option-text {
+            font-size: 16px;
+            color: #333;
+            flex: 1;
+        }
+
+        .submit-section {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        button {
+            padding: 14px 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="quiz-container">
+        <div class="question-header">
+            <p class="question-text">Which of the following are benefits of cloud computing? (Select all that apply)</p>
+            <p class="question-hint">💡 Multiple answers are correct</p>
+        </div>
+
+        <ul class="options-list">
+            <li class="option-item">
+                <input type="checkbox" id="opt1" name="benefits" value="scalability">
+                <label for="opt1" class="option-text">Scalability and elasticity</label>
+            </li>
+
+            <li class="option-item">
+                <input type="checkbox" id="opt2" name="benefits" value="capex">
+                <label for="opt2" class="option-text">High upfront capital expenditure</label>
+            </li>
+
+            <li class="option-item">
+                <input type="checkbox" id="opt3" name="benefits" value="payasyougo">
+                <label for="opt3" class="option-text">Pay-as-you-go pricing model</label>
+            </li>
+
+            <li class="option-item">
+                <input type="checkbox" id="opt4" name="benefits" value="global">
+                <label for="opt4" class="option-text">Global reach and availability</label>
+            </li>
+
+            <li class="option-item">
+                <input type="checkbox" id="opt5" name="benefits" value="maintenance">
+                <label for="opt5" class="option-text">Requires extensive on-premises maintenance</label>
+            </li>
+        </ul>
+
+        <div class="submit-section">
+            <button id="checkBtn">Check Answers</button>
+            <button id="continueBtn" style="display:none; margin-left: 10px;">Continue</button>
+        </div>
+    </div>
+
+    <script>
+        const correctAnswers = ['scalability', 'payasyougo', 'global'];
+
+        document.getElementById('checkBtn').addEventListener('click', function () {
+            const selected = Array.from(document.querySelectorAll('input[name="benefits"]:checked'))
+                .map(cb => cb.value);
+
+            if (selected.length === 0) {
+                alert('Please select at least one answer');
+                return;
+            }
+
+            const isCorrect = correctAnswers.every(ans => selected.includes(ans)) &&
+                selected.every(ans => correctAnswers.includes(ans));
+
+            if (isCorrect) {
+                alert('✅ Correct! All three answers are benefits of cloud computing.');
+            } else {
+                alert('❌ Not quite. The correct answers are: Scalability, Pay-as-you-go, and Global reach.');
+            }
+
+            this.style.display = 'none';
+            document.getElementById('continueBtn').style.display = 'inline-block';
+        });
+
+        document.getElementById('continueBtn').addEventListener('click', function () {
+            alert('Moving to next question...');
+            location.reload();
+        });
+    </script>
+</body>
+
+</html>

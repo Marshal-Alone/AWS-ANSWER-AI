@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google MUI Style Quiz</title>
+    <style>
+        body {
+            font-family: 'Roboto', Arial, sans-serif;
+            max-width: 700px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+
+        .MuiBox-root {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .MuiTypography-h6 {
+            font-size: 20px;
+            font-weight: 500;
+            color: #202124;
+            margin-bottom: 24px;
+            line-height: 1.5;
+        }
+
+        .MuiFormControlLabel-root {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .MuiFormControlLabel-root:hover {
+            background: #f1f3f4;
+        }
+
+        input[type="radio"] {
+            width: 20px;
+            height: 20px;
+            margin-right: 12px;
+            cursor: pointer;
+        }
+
+        .MuiTypography-body1 {
+            font-size: 16px;
+            color: #3c4043;
+        }
+
+        .button-container {
+            margin-top: 32px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        button {
+            padding: 10px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        button.primary {
+            background: #1a73e8;
+            color: white;
+        }
+
+        button.primary:hover {
+            background: #1557b0;
+        }
+
+        button:disabled {
+            background: #e0e0e0;
+            color: #9e9e9e;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="MuiBox-root css-rb0ah3">
+        <h6 class="MuiTypography-h6">
+            What is the primary purpose of Google Cloud Functions?
+        </h6>
+
+        <div class="quiz-options">
+            <label class="MuiFormControlLabel-root">
+                <input type="radio" name="gcpq" value="a">
+                <p class="MuiTypography-body1">To manage virtual machine instances</p>
+            </label>
+
+            <label class="MuiFormControlLabel-root">
+                <input type="radio" name="gcpq" value="b">
+                <p class="MuiTypography-body1">To run serverless event-driven code</p>
+            </label>
+
+            <label class="MuiFormControlLabel-root">
+                <input type="radio" name="gcpq" value="c">
+                <p class="MuiTypography-body1">To store relational database data</p>
+            </label>
+
+            <label class="MuiFormControlLabel-root">
+                <input type="radio" name="gcpq" value="d">
+                <p class="MuiTypography-body1">To configure network firewalls</p>
+            </label>
+        </div>
+
+        <div class="button-container">
+            <button id="submitBtn" class="primary">Submit</button>
+            <button id="nextBtn" class="primary" style="display:none;">NEXT</button>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('submitBtn').addEventListener('click', function () {
+            const selected = document.querySelector('input[name="gcpq"]:checked');
+            if (selected) {
+                alert('Correct! Google Cloud Functions runs serverless event-driven code.');
+                this.style.display = 'none';
+                document.getElementById('nextBtn').style.display = 'inline-block';
+            } else {
+                alert('Please select an answer');
+            }
+        });
+
+        document.getElementById('nextBtn').addEventListener('click', function () {
+            alert('Loading next question...');
+            location.reload();
+        });
+    </script>
+</body>
+
+</html>

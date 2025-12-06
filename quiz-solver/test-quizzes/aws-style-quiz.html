@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AWS Academy Style Quiz</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .quiz-item__card--active {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .quiz-card__main {
+            margin-bottom: 20px;
+        }
+
+        .quiz-card__title {
+            margin-bottom: 20px;
+        }
+
+        .fr-view p {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin: 0;
+        }
+
+        .quiz-card__options {
+            margin: 20px 0;
+        }
+
+        div[data-test-id="quiz-card-option"] {
+            padding: 15px;
+            margin: 10px 0;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        div[data-test-id="quiz-card-option"]:hover {
+            border-color: #4CAF50;
+            background: #f0f8f0;
+        }
+
+        .quiz-multiple-choice-option__text {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        input[type="radio"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .quiz-card__footer {
+            margin-top: 30px;
+            text-align: right;
+        }
+
+        button {
+            padding: 12px 30px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        button:hover {
+            background: #45a049;
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="quiz-item__card--active">
+        <div class="quiz-card__main">
+            <div class="quiz-card__title">
+                <div class="fr-view">
+                    <p>Which AWS service is primarily used for object storage?</p>
+                </div>
+            </div>
+
+            <div class="quiz-card__options">
+                <div data-test-id="quiz-card-option">
+                    <label class="quiz-multiple-choice-option">
+                        <input type="radio" name="q1" value="a">
+                        <span class="quiz-multiple-choice-option__text">
+                            <div class="fr-view">
+                                <p>Amazon EC2</p>
+                            </div>
+                        </span>
+                    </label>
+                </div>
+
+                <div data-test-id="quiz-card-option">
+                    <label class="quiz-multiple-choice-option">
+                        <input type="radio" name="q1" value="b">
+                        <span class="quiz-multiple-choice-option__text">
+                            <div class="fr-view">
+                                <p>Amazon S3</p>
+                            </div>
+                        </span>
+                    </label>
+                </div>
+
+                <div data-test-id="quiz-card-option">
+                    <label class="quiz-multiple-choice-option">
+                        <input type="radio" name="q1" value="c">
+                        <span class="quiz-multiple-choice-option__text">
+                            <div class="fr-view">
+                                <p>Amazon RDS</p>
+                            </div>
+                        </span>
+                    </label>
+                </div>
+
+                <div data-test-id="quiz-card-option">
+                    <label class="quiz-multiple-choice-option">
+                        <input type="radio" name="q1" value="d">
+                        <span class="quiz-multiple-choice-option__text">
+                            <div class="fr-view">
+                                <p>Amazon Lambda</p>
+                            </div>
+                        </span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="quiz-card__footer">
+            <button id="submitBtn">Submit</button>
+            <button id="nextBtn" style="display:none; margin-left: 10px;">Next Question</button>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('submitBtn').addEventListener('click', function () {
+            const selected = document.querySelector('input[name="q1"]:checked');
+            if (selected) {
+                alert('Answer submitted! Correct answer: Amazon S3');
+                this.style.display = 'none';
+                document.getElementById('nextBtn').style.display = 'inline-block';
+            } else {
+                alert('Please select an answer');
+            }
+        });
+
+        document.getElementById('nextBtn').addEventListener('click', function () {
+            alert('Moving to next question...');
+            location.reload();
+        });
+    </script>
+</body>
+
+</html>
